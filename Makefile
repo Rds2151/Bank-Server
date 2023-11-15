@@ -1,4 +1,4 @@
-init:
+build:
 	npm init --yes
 	npm i express body-parser ejs
 
