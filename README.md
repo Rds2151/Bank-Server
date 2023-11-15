@@ -1,6 +1,6 @@
-# Bank-Server
+# Bank Server Project
 
-This project involves creating a server using Express and maintaining a bank server with the following functionalities:
+This project involves creating an Express server to manage a bank server with the following functionalities:
 
 1. **Add Account**
 2. **Delete Account**
@@ -10,21 +10,47 @@ This project involves creating a server using Express and maintaining a bank ser
 
 ## Build Instructions
 
-If you're using Linux, you can build the project using the following commands :
+### To Build and Run on Linux:
 
->> To Build the project
 ```bash
+cd \path\to\Bank-Server
 make build
-```
-
->> To Run the project use
-```bash
 make run
 ```
 
+Make sure to have a `Makefile` with the following content:
 
-### Install Dependencies
+```make
+build:
+    npm init --yes
+    npm install express body-parser ejs
+
+run:
+    node index.js &
+    firefox http://localhost:3000/
+```
+
+### To Build and Run on Windows:
+
+Open a cmdline and run the following commands:
 
 ```bash
+cd \path\to\Bank-Server
 npm init --yes
 npm install express body-parser ejs
+```
+
+### Running the Project:
+
+On any operating system, open a terminal and run:
+
+```bash
+cd \path\to\Bank-Server
+node index.js
+```
+
+Then, open your preferred browser and navigate to:
+
+```bash
+http://localhost:3000/
+```
