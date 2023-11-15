@@ -1,22 +1,9 @@
 const express = require("express");
 const ejs = require("ejs");
 const app = express();
+const { BankServer, getAccount } = require("./server")
 const bodyparser = require("body-parser");
-
-const BankServer = [
-    {
-        AccountName: "Raj",
-        AccountNumber: "1",
-        AccountType: "Current",
-        Balance: 120000000,
-    },
-    {
-        AccountName: "Nitin",
-        AccountNumber: "2",
-        AccountType: "Savings",
-        Balance: 2000000,
-    }
-];
+const { validateAddAccount , validateSendMoney } = require("./validate");
 
 app.set("view engine", "ejs");
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -27,30 +14,13 @@ app.get("/", (req, res) => {
     res.render("index");
 });
 
-validateAddAccount = (accountName,accountNumber,balance) => {
-    let message;
-    if (getAccount(accountNumber)) {
-        message = "Account creation failed. Account number already exists.";
-    } else if (balance < 500) {
-        message = "Account creation failed. Initial balance should be at least 500.";
-    } else if (!/^[a-zA-Z\s]+$/.test(accountName)) {
-        message = "Account name should only contain letters and spaces.";
-    } else if (accountName.length < 3 || accountName.length > 50) {
-        message = "Account name should be between 3 and 50 characters.";
-    } else if (!/^[1-9]{1}[0-9]+$/.test(accountNumber)) {
-        message = "Invalid account number. Please enter decimal number."
-    }
-
-    return message;
-}
-
 // Add new Account into the Bank Server
 
 app.post("/api/addAccount", (req, res) => {
     const accountName = req.body.accountName
-    const accountNumber = req.body.accountNumber
+    const accountNumber = parseInt(req.body.accountNumber)
     const accountType = req.body.accountType
-    const balance = req.body.balance
+    const balance = parseInt(req.body.balance)
 
     let result = validateAddAccount(accountName,accountNumber,balance)
 
@@ -59,7 +29,7 @@ app.post("/api/addAccount", (req, res) => {
             AccountName: accountName,
             AccountNumber: accountNumber,
             AccountType: accountType,
-            Balance: parseInt(balance),
+            Balance: balance,
         };
         BankServer.push(Account);
         result = "Account created successfully!"
@@ -68,32 +38,11 @@ app.post("/api/addAccount", (req, res) => {
     res.render("index", {flag : "addAccount", message: result });
 });
 
-getAccount = (accountNumber) => BankServer.find((acc) => acc.AccountNumber === accountNumber);
-
-validateSendMoney = (senderNumber,receiverNumber,amount) => {
-    const senderAccount = getAccount(senderNumber)
-    let message;
-    
-    if (senderNumber === receiverNumber ) {
-        message= "Sender and receiver account numbers cannot be the same."
-    } else if(!senderAccount) {
-        message = `No account found with Account Number: ${senderNumber}`
-    } else if(!getAccount(receiverNumber)) {
-        message = `No account found with Account Number: ${receiverNumber}`
-    } else if (amount <= 0) {
-        message = "Invalid amount. Please enter a positive value for the money transfer."
-    } else if (senderAccount.Balance < parseInt(amount)) {
-        message = "Transaction failed. Insufficient funds in the account."
-    }
-    
-    return message;
-}
-
 // Send Money
 
 app.post("/api/sendMoney", (req,res) => {
-    const senderNumber = req.body.senderNumber;
-    const receiverNumber = req.body.receiverNumber;
+    const senderNumber = parseInt(req.body.senderNumber);
+    const receiverNumber = parseInt(req.body.receiverNumber);
     const amount = req.body.amount;
 
     let result = validateSendMoney(senderNumber,receiverNumber,amount)
@@ -113,7 +62,8 @@ app.post("/api/sendMoney", (req,res) => {
 // View Specific Account Details
 
 app.post("/api/viewAccount/", (req, res) => {
-    const Account = getAccount(req.body.accountNumber);
+    const accountNumber = parseInt(req.body.accountNumber)
+    const Account = getAccount(accountNumber);
 
     // Validation
     if (!Account) return res.render("index", { flag: "viewAccount",  message: `No account found with Account Number: ${req.body.accountNumber}`, account: Account });
@@ -131,14 +81,15 @@ app.get("/api/viewAllAccount", (req, res) => {
 // Delete Request
 
 app.post("/api/deleteAccount/", (req, res) => {
-    const account = getAccount(req.body.accountNumber);
+    const accountNumber = parseInt(req.body.accountNumber)
+    const account = getAccount(accountNumber);
     let message;
 
     if (!account) {
         message = `No account found with Account Number: ${req.body.accountNumber}`
     } else {
         const index = BankServer.indexOf(account);
-        BankServer.splice(index);
+        BankServer.splice(index,1);
         message = `Account with Account Number ${req.body.accountNumber} deleted successfully`
     }
     
