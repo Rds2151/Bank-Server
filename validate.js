@@ -1,0 +1,3 @@
+exports.validateName = function(name){
+    
+}
